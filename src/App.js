@@ -1,25 +1,22 @@
 import React from 'react';
-import logo from './logo.svg';
+
+import OrganizationStats from './components/organization-stats';
+import CompanyGraph from './components/company-graph';
+import RepoNetwork from './components/repo-network';
+
+// TODO: hook up with real data from GitHub GraphQL API
+// using the query from ./.data/github-skookums.gql
+import { data } from './.data/github-skookums';
+
 import './App.css';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <section className="App">
+      <OrganizationStats data={data} width={800} height={480} margin={{ bottom: 80, left: 40, right: 30, top: 0 }} />
+      <RepoNetwork data={data} width={800} height={480} />
+      <CompanyGraph data={data} width={800} height={480} margin={{ bottom: 80, left: 40, right: 30, top: 0 }} />
+    </section>
   );
 }
 
