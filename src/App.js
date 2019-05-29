@@ -6,7 +6,7 @@ import RepoNetwork from './components/repo-network';
 
 // TODO: hook up with real data from GitHub GraphQL API
 // using the query from ./.data/github-skookums.gql
-import { data } from './.data/github-skookums';
+import { data } from './.data/github';
 
 import './App.css';
 

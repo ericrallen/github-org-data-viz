@@ -3,7 +3,8 @@ import { Group } from '@vx/group';
 import { GradientOrangeRed } from '@vx/gradient';
 
 // TODO: Interate with the Bamboo API to grab this data
-import { employees } from '../../.data/skookum-employees';
+// alternatively, accept any JSON endpoint
+// import { employees } from '../../.data/employees';
 
 import makePie from '../../utils/make-pie';
 
@@ -18,7 +19,7 @@ export default ({ data, width, height, margin }) => {
 
   const { organization } = data;
 
-  const people = organization.membersWithRole.nodes
+  /*const people = organization.membersWithRole.nodes
     .map((member) => {
       if (member.name) {
         const nameArray = member.name.split(' ');
@@ -29,15 +30,15 @@ export default ({ data, width, height, margin }) => {
       }
     })
     .filter(name => name)
-  ;
+  ;*/
 
-  const validMembers = people.reduce((validPeople, person) => {
+  /*const validMembers = people.reduce((validPeople, person) => {
     if (employees.indexOf(person) !== -1) {
       validPeople += 1;
     }
 
     return validPeople;
-  }, 0);
+  }, 0);*/
 
   const contributionStats = organization.membersWithRole.nodes.reduce((contributionsObject, member) => {
     const {
@@ -87,7 +88,9 @@ export default ({ data, width, height, margin }) => {
     return contributionsObject;
   }, {});
 
-  const reportDate = new Date().toLocaleDateString(process.env.REACT_APP_LOCALE, { month: 'long', year: 'numeric' });
+  const locale = process.env.REACT_APP_LOCALE || 'en-us';
+
+  const reportDate = new Date().toLocaleDateString(locale, { month: 'long', year: 'numeric' });
 
   const contributionData = [];
   const repoData = [];
@@ -138,8 +141,7 @@ export default ({ data, width, height, margin }) => {
         </p>
         <p>
           <strong>Team Members</strong>: {organization.membersWithRole.totalCount + organization.pendingMembers.totalCount}* (<em>{organization.pendingMembers.totalCount} pending</em>)
-          <br />
-          <sub><em>*Only {validMembers} are recognized as employees.</em></sub>
+          { /*<br /><sub><em>*Only {validMembers} are recognized as employees.</em></sub>*/ }
         </p>
       </header>
       <article>
