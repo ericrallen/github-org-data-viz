@@ -12,12 +12,9 @@ const PADDING = 30;
 export default class RepoNetwork extends Component {
   state = {
     selectedNode: null,
-    graph: {
-      nodes: [],
-      links: [],
-    },
-    repos: {},
-    parentGraph: {},
+    nodes: [],
+    links: [],
+    repos: this.generateRepoMap()
   };
 
   constructor(props) {
@@ -27,36 +24,46 @@ export default class RepoNetwork extends Component {
   }
 
   componentDidMount() {
-    const repos = this.generateRepoMap();
-    const graph = this.generateGraph(repos);
+    const { repos } = this.state;
+
+    const { nodes, links } = this.generateGraph(repos);
 
     this.setState({
-      repos,
-      graph,
+      nodes,
+      links,
     });
   }
 
   selectNode(e) {
     const { target } = e;
-    const { selectedNode, graph, parentGraph } = this.state;
+    const { selectedNode, nodes } = this.state;
 
     const repo = target.id.replace('node-', '');
 
-    if (repo !== selectedNode) {
-      const newParentGraph = Object.assign({}, graph);
+    const { nodes: childNodes } = this.getChildNodes(selectedNode);
 
-      this.setState({
-        selectedNode: repo,
-        graph: this.getChildNodes(repo),
-        parentGraph: newParentGraph,
-      });
-    } else {
-      // TODO: make this work correctly
-      this.setState({
-        selectedNode: null,
-        graph: parentGraph,
-      });
+    const childRepos = childNodes.map(node => node.label);
+
+    let updatedNodes = nodes.filter(node => !childRepos.includes(node.label));
+
+    let updatedLinks = [];
+
+    let updatedNode = null;
+
+    if (repo !== selectedNode) {
+      const { nodes: childNodes, links: childLinks } = this.getChildNodes(repo);
+
+      updatedNode = repo;
+
+      updatedNodes = [...updatedNodes, ...childNodes];
+      updatedLinks = [...updatedLinks, ...childLinks];
     }
+
+    this.setState({
+      selectedNode: updatedNode,
+      nodes: updatedNodes,
+      links: updatedLinks,
+    });
   }
 
   checkNodesForOverlap = (nodes, x, y, radius) => nodes.some((node) => {
@@ -85,30 +92,31 @@ export default class RepoNetwork extends Component {
   getChildNodes(selectedNode) {
     const { width, height } = this.props;
 
-    const { repos, graph } = this.state;
+    const { nodes, repos } = this.state;
 
-    const newGraph = Object.assign({}, graph);
+    const childNodes = [];
+    const childLinks = [];
 
     if (selectedNode) {
       repos[selectedNode].forEach((repo) => {
-        const parent = graph.nodes.find((item) => item.label === selectedNode);
+        const parent = nodes.find((item) => item.label === selectedNode);
         const childRadius = 7;
 
-        const xMin = parent.x - parent.radius - childRadius - 20;
-        const xMax = parent.x + parent.radius + childRadius + 20;
-        const yMin = parent.y - parent.radius - childRadius - 20;
-        const yMax = parent.y + parent.radius + childRadius + 20;
+        const xMin = parent.x - parent.radius - childRadius - 50;
+        const xMax = parent.x + parent.radius + childRadius + 50;
+        const yMin = parent.y - parent.radius - childRadius - 50;
+        const yMax = parent.y + parent.radius + childRadius + 50;
 
         let childX = clamp(random(xMin, xMax), PADDING, width - PADDING);
         let childY = clamp(random(yMin, yMax), PADDING, height - PADDING);
 
-        let childOverlap = this.checkNodesForOverlap(graph.nodes, childX, childY, childRadius);
+        let childOverlap = this.checkNodesForOverlap(nodes, childX, childY, childRadius);
 
         while(childOverlap) {
           childX = clamp(random(xMin, xMax), PADDING, width - PADDING);
           childY = clamp(random(yMin, yMax), PADDING, height - PADDING);
 
-          childOverlap = this.checkNodesForOverlap(graph.nodes, childX, childY, childRadius);
+          childOverlap = this.checkNodesForOverlap(nodes, childX, childY, childRadius);
         }
 
         const childNode = {
@@ -121,16 +129,19 @@ export default class RepoNetwork extends Component {
           opacity: parent.opacity,
         };
 
-        newGraph.nodes.push(childNode);
+        childNodes.push(childNode);
 
-        newGraph.links.push({
+        childLinks.push({
           source: parent,
           target: childNode,
         });
       });
     }
 
-    return newGraph;
+    return {
+      nodes: childNodes,
+      links: childLinks,
+    };
   }
 
   generateRepoMap() {
@@ -202,8 +213,8 @@ export default class RepoNetwork extends Component {
     const { width, height } = this.props;
 
     return Object.keys(repos).reduce((graphObject, owner) => {
-      const radius = 10 * repos[owner].length / 2;
-      const opacity = clamp(0.3 + repos[owner].length * 0.1, 0.3, 0.9);
+      const radius = clamp(9 * repos[owner].length / 2, 10, 75);
+      const opacity = clamp(0.3 + repos[owner].length * 0.125, 0.3, 1.0);
 
       let x = random(PADDING + radius, width - PADDING - radius);
       let y = random(PADDING + radius, height - PADDING - radius);
@@ -242,7 +253,12 @@ export default class RepoNetwork extends Component {
   render () {
     const { width, height } = this.props;
 
-    const { graph } = this.state;
+    const { nodes, links } = this.state;
+
+    const graph = {
+      nodes,
+      links,
+    };
 
     return (
       <article>
