@@ -4,7 +4,7 @@ import { GradientOrangeRed } from '@vx/gradient';
 
 import makePie from '../../utils/make-pie';
 
-export default ({ data, width, height, margin }) => {
+function CompanyGraph({ data: { organization }, width, height, margin }) {
   const white = '#ffffff';
   const black = '#000000';
 
@@ -13,20 +13,39 @@ export default ({ data, width, height, margin }) => {
   const centerY = height / 2;
   const centerX = width / 2;
 
-  const companyName = data.organization.name;
-  const companyUrl = data.organization.url;
+  const companyName = organization.name;
+  const companyUrl = organization.url;
+  const companySlug = organization.login;
 
-  const orgData = data.organization.membersWithRole.nodes.reduce((containerObject, member) => {
+  const orgData = organization.membersWithRole.nodes.reduce((containerObject, member) => {
     const { company } = member;
 
-    const formattedCompany = (company) ? company.trim() : 'null';
+    const checkForMultipleMentions = company && company.indexOf('@') !== -1 && company.lastIndexOf('@') !== 0;
 
-    if (containerObject[formattedCompany]) {
-      containerObject[formattedCompany].value += 1;
+    if (checkForMultipleMentions) {
+      console.log(company);
+
+      company.split('@').forEach((companyWithoutMention) => {
+        const formattedCompany = `@${companyWithoutMention.trim()}`;
+
+        if (containerObject[formattedCompany]) {
+          containerObject[formattedCompany].value += 1;
+        } else {
+          containerObject[formattedCompany] = {
+            value: 1,
+          };
+        }
+      });
     } else {
-      containerObject[formattedCompany] = {
-        value: 1,
-      };
+      const formattedCompany = (company) ? company.trim() : 'null';
+
+      if (containerObject[formattedCompany]) {
+        containerObject[formattedCompany].value += 1;
+      } else {
+        containerObject[formattedCompany] = {
+          value: 1,
+        };
+      }
     }
 
     return containerObject;
@@ -40,12 +59,31 @@ export default ({ data, width, height, margin }) => {
 
   const formattedOrgData = [];
 
-  Object.keys(orgData).forEach((company) => {
-    if (company.includes(companyName)) {
-      ourOrgCompanyNameData.push(Object.assign({}, { label: company }, orgData[company]));
-      combinedOrgUsers.value += orgData[company].value;
+  Object.keys(orgData).forEach((userCompany) => {
+    const checkForMultipleMentions = userCompany && userCompany.indexOf('@') !== -1 && userCompany.lastIndexOf('@') !== 0;
+
+    if (checkForMultipleMentions) {
+      userCompany.split('@').forEach((companyWithoutMention) => {
+        const company = `@${companyWithoutMention.trim()}`;
+
+        const companyNameRegEx = new RegExp(`${companyName}|${companySlug}`, 'i');
+
+        if (companyNameRegEx.test(company)) {
+          ourOrgCompanyNameData.push(Object.assign({}, { label: company }, orgData[company]));
+          combinedOrgUsers.value += orgData[company].value;
+        } else {
+          formattedOrgData.push(Object.assign({}, { label: company }, orgData[company]));
+        }
+      });
     } else {
-      formattedOrgData.push(Object.assign({}, { label: company }, orgData[company]));
+      const companyNameRegEx = new RegExp(`${companyName}|${companySlug}`, 'i');
+
+      if (companyNameRegEx.test(userCompany)) {
+        ourOrgCompanyNameData.push(Object.assign({}, { label: userCompany }, orgData[userCompany]));
+        combinedOrgUsers.value += orgData[userCompany].value;
+      } else {
+        formattedOrgData.push(Object.assign({}, { label: userCompany }, orgData[userCompany]));
+      }
     }
   });
 
@@ -67,4 +105,6 @@ export default ({ data, width, height, margin }) => {
       </svg>
     </article>
   );
-};
+}
+
+export default CompanyGraph;

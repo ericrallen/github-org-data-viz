@@ -1,3 +1,3 @@
-import CompanyGraph from './company-graph';
+import CompanyGraph from './company-graph.gql';
 
 export default CompanyGraph;

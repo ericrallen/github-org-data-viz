@@ -1,21 +1,20 @@
 # github-org-data-viz
 
-This project will eventually allow you to plug in an organization name and will
-generate a nice data vizualization dashboard of relevant stats.
+This project provides simple insights into the public contribution activity of a
+GitHub Organization.
 
 ## Current Considerations
 
-Currently it expects a hardcoded JSON response from the GitHub GraphQL API.
+Pagination is not yet implemented, so for larger organizations, you'll only
+see the first `100` members.
 
-You can fill out the `variables` in the provided `example.gql` file and run it
-through the [GitHub GraphQL API EXplorer](https://developer.github.com/v4/explorer/)
-and save the result to `src/.data/github.gql` to see the dashboard until this is
-hooked up to the GitHub API.
+Furutre repository and contribution insights will only include the `100` most
+recently updated repositories.
 
 ## Using
 
 1. `git clone` this repo
 2. `cd` into your new repo
 3. `yarn`
-4. Follow the instructions from the **Current Considerations** section above
 4. `yarn start`
+5. Enter the desired organization name into the search box.

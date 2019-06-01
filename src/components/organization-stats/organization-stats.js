@@ -1,46 +1,23 @@
 import React from 'react';
-import { Group } from '@vx/group';
-import { GradientOrangeRed } from '@vx/gradient';
 
-// TODO: Interate with the Bamboo API to grab this data
-// alternatively, accept any JSON endpoint
-// import { employees } from '../../.data/employees';
+// TODO: move commented member contribution pie graph code to it's own Component
 
-import makePie from '../../utils/make-pie';
+// import { Group } from '@vx/group';
+// import { GradientOrangeRed } from '@vx/gradient';
+// import makePie from '../../utils/make-pie';
 
-export default ({ data, width, height, margin }) => {
-  const white = '#ffffff';
-  const black = '#000000';
+function  OrganizationStats({ data, startDate, endDate, width, height, margin }) {
+  //const white = '#ffffff';
+  //const black = '#000000';
 
-  const innerRadius = Math.min(width, height) / 2 - 40;
-  const outerRadius = innerRadius + 80;
-  const centerY = height / 2;
-  const centerX = width / 2;
+  //const innerRadius = Math.min(width, height) / 2 - 40;
+  //const outerRadius = innerRadius + 80;
+  //const centerY = height / 2;
+  //const centerX = width / 2;
 
   const { organization } = data;
 
-  /*const people = organization.membersWithRole.nodes
-    .map((member) => {
-      if (member.name) {
-        const nameArray = member.name.split(' ');
-
-        return `${nameArray[0]} ${nameArray[nameArray.length - 1]}`;
-      } else {
-        return null;
-      }
-    })
-    .filter(name => name)
-  ;*/
-
-  /*const validMembers = people.reduce((validPeople, person) => {
-    if (employees.indexOf(person) !== -1) {
-      validPeople += 1;
-    }
-
-    return validPeople;
-  }, 0);*/
-
-  const contributionStats = organization.membersWithRole.nodes.reduce((contributionsObject, member) => {
+  /*const contributionStats = organization.membersWithRole.nodes.reduce((contributionsObject, member) => {
     const {
       hasAnyContributions,
     } = member.contributionsCollection;
@@ -86,16 +63,20 @@ export default ({ data, width, height, margin }) => {
     }
 
     return contributionsObject;
-  }, {});
+  }, {});*/
 
   const locale = process.env.REACT_APP_LOCALE || 'en-us';
 
-  const reportDate = new Date().toLocaleDateString(locale, { month: 'long', year: 'numeric' });
+  const reportStartDate = startDate.toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' });
+  const reportEndDate = endDate.toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' });
 
-  const contributionData = [];
-  const repoData = [];
+  // TODO: decide on a better date format for report heading
+  const reportDate = `${reportStartDate} - ${reportEndDate}`;
 
-  const statKeyMap = {
+  //const contributionData = [];
+  //const repoData = [];
+
+  /*const statKeyMap = {
     totalCommits: 'Commits',
     totalPullRequests: 'PRs',
     totalIssues: 'Issues',
@@ -104,9 +85,9 @@ export default ({ data, width, height, margin }) => {
     totalPullRequestRepos: 'PRs',
     totalIssueRepos: 'Issues',
     totalPullRequestReviewRepos: 'Reviews',
-  };
+  };*/
 
-  Object.keys(contributionStats).forEach((stat) => {
+  /*Object.keys(contributionStats).forEach((stat) => {
     if (stat.endsWith('Repos')) {
       repoData.push({
         label: statKeyMap[stat],
@@ -126,13 +107,43 @@ export default ({ data, width, height, margin }) => {
 
   const totalContributions = contributionData.reduce((total, contributionStat) => {
     return total += contributionStat.value;
-  }, 0);
+  }, 0);*/
 
+  const hasWebsite = organization.websiteUrl;
+  const hasAvatar = organization.avatarUrl;
+
+  let avatar = "";
+
+  if (hasWebsite && hasAvatar) {
+    avatar = (
+      <a href={organization.websiteUrl}>
+        <img src={organization.avatarUrl} alt={`Go to Website for ${organization.name}`} />
+      </a>
+    );
+  } else if(hasAvatar) {
+    avatar = (
+      <img src={organization.avatarUrl} alt={`GitHub Avatar for ${organization.name}`} />
+    );
+  }
+
+  // TODO: abstract the label: value elements below into a simple, reusable Component
   return (
     <section>
       <header>
         <h1>{organization.name} GitHub Analysis</h1>
         <h2>Stats for {reportDate}</h2>
+        {avatar}
+        <p>
+          <strong>Location</strong>:&nbsp;
+          {organization.location}
+        </p>
+        {organization.description &&
+          <p>{organization.description}</p>
+        }
+        <p>
+          <strong>Verified?</strong>:&nbsp;
+          {(organization.isVerified) ? 'Yes' : 'No'}
+        </p>
         <p>
           <strong>Organization URL</strong>:&nbsp;
           <a href={organization.url} target="_blank" rel="noopener noreferrer">
@@ -140,11 +151,10 @@ export default ({ data, width, height, margin }) => {
           </a>
         </p>
         <p>
-          <strong>Team Members</strong>: {organization.membersWithRole.totalCount + organization.pendingMembers.totalCount}* (<em>{organization.pendingMembers.totalCount} pending</em>)
-          { /*<br /><sub><em>*Only {validMembers} are recognized as employees.</em></sub>*/ }
+          <strong>Team Members</strong>: {organization.membersWithRole.totalCount + organization.pendingMembers.totalCount} (<em>{organization.pendingMembers.totalCount} pending</em>)
         </p>
       </header>
-      <article>
+      {/*<article>
         <header>
           <h2>Contribution Activity</h2>
           <p>How many repositories did our team memebers contribute to? How many total contributions were made across the organization?</p>
@@ -157,7 +167,9 @@ export default ({ data, width, height, margin }) => {
             {makePie(contributionData, outerRadius, true, { text: `Total Contributions: ${totalContributions}`, top: centerY - 20 })}
           </Group>
         </svg>
-      </article>
+      </article>*/}
     </section>
   );
-};
+}
+
+export default OrganizationStats;

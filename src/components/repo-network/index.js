@@ -1,3 +1,3 @@
-import RepoNetwork from './repo-network';
+import RepoNetwork from './repo-network.gql';
 
 export default RepoNetwork;
